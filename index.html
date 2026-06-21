@@ -45,7 +45,7 @@
       <aside class="hero-card">
         <p class="card-title">Visitas al sitio</p>
         <p class="visit-number" id="visitCount">0</p>
-        <p class="muted">Contador global con Firebase</p>
+        <p class="muted">Contador local del navegador</p>
       </aside>
     </section>
 
@@ -184,7 +184,7 @@
           <textarea id="message" placeholder="Escribe tu comentario u opinión" required maxlength="300"></textarea>
 
           <button class="btn primary" type="submit">Publicar comentario</button>
-          <p class="muted small">Los comentarios se guardan en Firebase y serán visibles para todos.</p>
+          <p class="muted small">Los comentarios se guardan localmente en este navegador.</p>
         </form>
 
         <div class="comments-box">
@@ -200,6 +200,6 @@
     <p>Contenido con fines informativos. Para casos personales, acudir a un profesional de salud o institución educativa.</p>
   </footer>
 
-  <script type="module" src="script.js"></script>
+  <script src="script.js"></script>
 </body>
 </html>
