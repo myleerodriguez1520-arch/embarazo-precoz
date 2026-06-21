@@ -1,5 +1,30 @@
-const visitKey = "embarazo_precoz_visit_count";
-const commentKey = "embarazo_precoz_comments";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+import {
+  getFirestore,
+  collection,
+  addDoc,
+  serverTimestamp,
+  query,
+  orderBy,
+  onSnapshot,
+  doc,
+  setDoc,
+  increment,
+  getDoc
+} from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCaan_G36y_R0Wp5dL8bSLCv2672pV8x3Q",
+  authDomain: "embarazo-precoz-136b6.firebaseapp.com",
+  projectId: "embarazo-precoz-136b6",
+  storageBucket: "embarazo-precoz-136b6.firebasestorage.app",
+  messagingSenderId: "1065790691651",
+  appId: "1:1065790691651:web:5c197198a39f9c14fc77f6",
+  measurementId: "G-FTMSPN9MF7"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
 
 const visitCountElement = document.getElementById("visitCount");
 const commentForm = document.getElementById("commentForm");
@@ -7,55 +32,77 @@ const commentsList = document.getElementById("commentsList");
 const menuToggle = document.getElementById("menuToggle");
 const navLinks = document.getElementById("navLinks");
 
-function updateVisits() {
-  const currentVisits = Number(localStorage.getItem(visitKey) || 0) + 1;
-  localStorage.setItem(visitKey, currentVisits);
-  visitCountElement.textContent = currentVisits;
-}
+const commentsRef = collection(db, "comments");
+const visitsRef = doc(db, "stats", "visits");
 
-function getComments() {
-  return JSON.parse(localStorage.getItem(commentKey) || "[]");
-}
+async function updateGlobalVisits() {
+  try {
+    const sessionKey = "firebase_visit_registered";
 
-function saveComments(comments) {
-  localStorage.setItem(commentKey, JSON.stringify(comments));
-}
+    if (!sessionStorage.getItem(sessionKey)) {
+      await setDoc(visitsRef, { total: increment(1) }, { merge: true });
+      sessionStorage.setItem(sessionKey, "true");
+    }
 
-function renderComments() {
-  const comments = getComments();
-  commentsList.innerHTML = "";
-
-  if (comments.length === 0) {
-    commentsList.innerHTML = '<p class="muted">Aún no hay comentarios publicados.</p>';
-    return;
+    const visitSnap = await getDoc(visitsRef);
+    const totalVisits = visitSnap.exists() ? visitSnap.data().total || 0 : 0;
+    visitCountElement.textContent = totalVisits;
+  } catch (error) {
+    console.error("Error al actualizar visitas:", error);
+    visitCountElement.textContent = "—";
   }
+}
 
-  comments.slice().reverse().forEach((comment) => {
-    const item = document.createElement("div");
-    item.className = "comment-item";
+function listenToComments() {
+  const commentsQuery = query(commentsRef, orderBy("createdAt", "desc"));
 
-    const meta = document.createElement("div");
-    meta.className = "comment-meta";
+  onSnapshot(commentsQuery, (snapshot) => {
+    commentsList.innerHTML = "";
 
-    const name = document.createElement("span");
-    name.className = "comment-name";
-    name.textContent = comment.name;
+    if (snapshot.empty) {
+      commentsList.innerHTML = '<p class="muted">Aún no hay comentarios publicados.</p>';
+      return;
+    }
 
-    const date = document.createElement("span");
-    date.textContent = comment.date;
+    snapshot.forEach((document) => {
+      const comment = document.data();
 
-    const message = document.createElement("p");
-    message.textContent = comment.message;
+      const item = document.createElement("div");
+      item.className = "comment-item";
 
-    meta.appendChild(name);
-    meta.appendChild(date);
-    item.appendChild(meta);
-    item.appendChild(message);
-    commentsList.appendChild(item);
+      const meta = document.createElement("div");
+      meta.className = "comment-meta";
+
+      const name = document.createElement("span");
+      name.className = "comment-name";
+      name.textContent = comment.name || "Anónimo";
+
+      const date = document.createElement("span");
+      const createdAt = comment.createdAt?.toDate?.();
+      date.textContent = createdAt
+        ? createdAt.toLocaleDateString("es-PE", {
+            day: "2-digit",
+            month: "2-digit",
+            year: "numeric"
+          })
+        : "Ahora";
+
+      const message = document.createElement("p");
+      message.textContent = comment.message || "";
+
+      meta.appendChild(name);
+      meta.appendChild(date);
+      item.appendChild(meta);
+      item.appendChild(message);
+      commentsList.appendChild(item);
+    });
+  }, (error) => {
+    console.error("Error al leer comentarios:", error);
+    commentsList.innerHTML = '<p class="muted">No se pudieron cargar los comentarios. Revisa las reglas de Firestore.</p>';
   });
 }
 
-commentForm.addEventListener("submit", (event) => {
+commentForm.addEventListener("submit", async (event) => {
   event.preventDefault();
 
   const name = document.getElementById("name").value.trim();
@@ -63,29 +110,29 @@ commentForm.addEventListener("submit", (event) => {
 
   if (!name || !message) return;
 
-  const comments = getComments();
-  comments.push({
-    name,
-    message,
-    date: new Date().toLocaleDateString("es-PE", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric"
-    })
+  try {
+    await addDoc(commentsRef, {
+      name,
+      message,
+      createdAt: serverTimestamp()
+    });
+
+    commentForm.reset();
+  } catch (error) {
+    console.error("Error al publicar comentario:", error);
+    alert("No se pudo publicar el comentario. Revisa la configuración de Firebase y las reglas de Firestore.");
+  }
+});
+
+if (menuToggle && navLinks) {
+  menuToggle.addEventListener("click", () => {
+    navLinks.classList.toggle("active");
   });
 
-  saveComments(comments);
-  commentForm.reset();
-  renderComments();
-});
+  document.querySelectorAll(".nav-links a").forEach((link) => {
+    link.addEventListener("click", () => navLinks.classList.remove("active"));
+  });
+}
 
-menuToggle.addEventListener("click", () => {
-  navLinks.classList.toggle("active");
-});
-
-document.querySelectorAll(".nav-links a").forEach((link) => {
-  link.addEventListener("click", () => navLinks.classList.remove("active"));
-});
-
-updateVisits();
-renderComments();
+updateGlobalVisits();
+listenToComments();
