@@ -1,0 +1,32 @@
+REEMPLAZO NECESARIO
+
+Este ZIP usa tu nuevo proyecto Firebase:
+
+projectId: embarazo-precoz-136b6
+
+En GitHub reemplaza:
+- index.html
+- style.css
+- script.js
+
+Luego en Firebase > Firestore Database > Rules pega:
+
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /comments/{document=**} {
+      allow read, create: if true;
+    }
+
+    match /stats/{document=**} {
+      allow read, write: if true;
+    }
+  }
+}
+
+Después presiona Publish.
+
+IMPORTANTE:
+Asegúrate de estar modificando las reglas del proyecto correcto:
+embarazo-precoz-136b6
