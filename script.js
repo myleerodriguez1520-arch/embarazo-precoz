@@ -14,13 +14,13 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyCaan_G36y_R0Wp5dL8bSLCv2672pV8x3Q",
-  authDomain: "embarazo-precoz-136b6.firebaseapp.com",
-  projectId: "embarazo-precoz-136b6",
-  storageBucket: "embarazo-precoz-136b6.firebasestorage.app",
-  messagingSenderId: "1065790691651",
-  appId: "1:1065790691651:web:5c197198a39f9c14fc77f6",
-  measurementId: "G-FTMSPN9MF7"
+  apiKey: "AIzaSyDiWqVUHxqqIMbL1kHlk7i84R4GTM6Dsg8",
+  authDomain: "embarazo-precoz-dbc7b.firebaseapp.com",
+  projectId: "embarazo-precoz-dbc7b",
+  storageBucket: "embarazo-precoz-dbc7b.firebasestorage.app",
+  messagingSenderId: "986445624216",
+  appId: "1:986445624216:web:1d2e5ad66cd0ddc6ed71ed",
+  measurementId: "G-E2LFSQYCTC"
 };
 
 const app = initializeApp(firebaseConfig);
@@ -120,19 +120,17 @@ commentForm.addEventListener("submit", async (event) => {
     commentForm.reset();
   } catch (error) {
     console.error("Error al publicar comentario:", error);
-    alert("No se pudo publicar el comentario. Revisa la configuración de Firebase y las reglas de Firestore.");
+    alert("No se pudo publicar el comentario. Revisa la configuración de Firebase.");
   }
 });
 
-if (menuToggle && navLinks) {
-  menuToggle.addEventListener("click", () => {
-    navLinks.classList.toggle("active");
-  });
+menuToggle.addEventListener("click", () => {
+  navLinks.classList.toggle("active");
+});
 
-  document.querySelectorAll(".nav-links a").forEach((link) => {
-    link.addEventListener("click", () => navLinks.classList.remove("active"));
-  });
-}
+document.querySelectorAll(".nav-links a").forEach((link) => {
+  link.addEventListener("click", () => navLinks.classList.remove("active"));
+});
 
 updateGlobalVisits();
 listenToComments();
